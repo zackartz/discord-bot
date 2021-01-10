@@ -19,78 +19,81 @@ var AddRoleCommand = &cmdlr2.Command{
 	Usage:       "add @role :emoji:",
 	Example:     "add @DPS :DPS:",
 	Handler: func(ctx *cmdlr2.Ctx) {
-		rID, err := strconv.ParseInt(ctx.Args.Get(0).AsRoleMentionID(), 10, 64)
-		if err != nil {
-			ctx.ResponseText(fmt.Sprintf("%v", err))
-			return
-		}
+		if ctx.Event.Message.Author.ID == 133314498214756352 || ctx.Event.Message.Author.ID == 271787171889807360 {
 
-		var role *disgord.Role
-		roles, err := ctx.Client.Guild(ctx.Event.Message.GuildID).GetRoles()
-		if err != nil {
-			ctx.ResponseText(fmt.Sprintf("%v", err))
-			return
-		}
-
-		role, err = getRoles(roles, rID)
-		if err != nil {
-			ctx.ResponseText(fmt.Sprintf("%v", err))
-			return
-		}
-
-		msg, err := db.GetRoleMessageByChannelID(int64(ctx.Event.Message.ChannelID))
-		if err != nil {
-			ctx.ResponseText(fmt.Sprintf("%v", err))
-			return
-		}
-
-		var emoji *disgord.Emoji
-
-		if strings.HasPrefix(ctx.Args.Get(1).Raw(), "<") {
-			regex := regexp.MustCompile("\\d+")
-			id := regex.Find([]byte(ctx.Args.Get(1).Raw()))
-			eID, err := strconv.ParseInt(string(id), 10, 64)
+			rID, err := strconv.ParseInt(ctx.Args.Get(0).AsRoleMentionID(), 10, 64)
 			if err != nil {
 				ctx.ResponseText(fmt.Sprintf("%v", err))
 				return
 			}
 
-			emoji, err = ctx.Client.Guild(ctx.Event.Message.GuildID).Emoji(disgord.Snowflake(eID)).Get()
+			var role *disgord.Role
+			roles, err := ctx.Client.Guild(ctx.Event.Message.GuildID).GetRoles()
 			if err != nil {
 				ctx.ResponseText(fmt.Sprintf("%v", err))
 				return
 			}
 
-			err = db.AddRoleToMessage(int64(role.ID), msg.ID, eID, emoji.Name, role.Name)
+			role, err = getRoles(roles, rID)
 			if err != nil {
 				ctx.ResponseText(fmt.Sprintf("%v", err))
 				return
 			}
-		} else {
-			emoji = &disgord.Emoji{Name: ctx.Args.Get(1).Raw()}
-			err = db.AddRoleToMessage(int64(role.ID), msg.ID, 0, ctx.Args.Get(1).Raw(), role.Name)
+
+			msg, err := db.GetRoleMessageByChannelID(int64(ctx.Event.Message.ChannelID))
 			if err != nil {
 				ctx.ResponseText(fmt.Sprintf("%v", err))
 				return
 			}
+
+			var emoji *disgord.Emoji
+
+			if strings.HasPrefix(ctx.Args.Get(1).Raw(), "<") {
+				regex := regexp.MustCompile("\\d+")
+				id := regex.Find([]byte(ctx.Args.Get(1).Raw()))
+				eID, err := strconv.ParseInt(string(id), 10, 64)
+				if err != nil {
+					ctx.ResponseText(fmt.Sprintf("%v", err))
+					return
+				}
+
+				emoji, err = ctx.Client.Guild(ctx.Event.Message.GuildID).Emoji(disgord.Snowflake(eID)).Get()
+				if err != nil {
+					ctx.ResponseText(fmt.Sprintf("%v", err))
+					return
+				}
+
+				err = db.AddRoleToMessage(int64(role.ID), msg.ID, eID, emoji.Name, role.Name)
+				if err != nil {
+					ctx.ResponseText(fmt.Sprintf("%v", err))
+					return
+				}
+			} else {
+				emoji = &disgord.Emoji{Name: ctx.Args.Get(1).Raw()}
+				err = db.AddRoleToMessage(int64(role.ID), msg.ID, 0, ctx.Args.Get(1).Raw(), role.Name)
+				if err != nil {
+					ctx.ResponseText(fmt.Sprintf("%v", err))
+					return
+				}
+			}
+
+			msg, err = db.GetRoleMessageByChannelID(int64(ctx.Event.Message.ChannelID))
+			if err != nil {
+				ctx.ResponseText(fmt.Sprintf("%v", err))
+				return
+			}
+
+			embed := renderEmbed(msg)
+
+			_, err = ctx.Client.Channel(ctx.Event.Message.ChannelID).Message(disgord.Snowflake(msg.ID)).Update().SetEmbed(embed).Execute()
+
+			err = ctx.Client.Channel(disgord.Snowflake(msg.ChannelID)).Message(disgord.Snowflake(msg.ID)).Reaction(emoji).Create()
+			if err != nil {
+				ctx.ResponseText(fmt.Sprintf("%v", err))
+			}
+
+			_ = ctx.Client.Channel(ctx.Event.Message.ChannelID).Message(ctx.Event.Message.ID).Delete()
 		}
-
-		msg, err = db.GetRoleMessageByChannelID(int64(ctx.Event.Message.ChannelID))
-		if err != nil {
-			ctx.ResponseText(fmt.Sprintf("%v", err))
-			return
-		}
-
-		embed := renderEmbed(msg)
-
-		_, err = ctx.Client.Channel(ctx.Event.Message.ChannelID).Message(disgord.Snowflake(msg.ID)).Update().SetEmbed(embed).Execute()
-
-		err = ctx.Client.Channel(disgord.Snowflake(msg.ChannelID)).Message(disgord.Snowflake(msg.ID)).Reaction(emoji).Create()
-		if err != nil {
-			ctx.ResponseText(fmt.Sprintf("%v", err))
-		}
-
-		_ = ctx.Client.Channel(ctx.Event.Message.ChannelID).Message(ctx.Event.Message.ID).Delete()
 	},
 }
 
