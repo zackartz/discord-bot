@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: synergy-bot
+spec:
+  selector:
+    matchLabels:
+      app: synergy-bot
+  template:
+    metadata:
+      labels:
+        app: synergy-bot
+    spec:
+      containers:
+      - name: synergy-bot
+        image: <Image>
+        env:
+          - name: DISCORD_TOKEN
+            value: Nzk3NjYyMTUzOTk3MDI1MzAw.X_puxQ.KHUpJd9-yizSDM6yU60aQeyvvaI
+          - name: DB_USER
+            value: bot-admin
+          - name: DB_PASS
+            value: xPkVCla0Dg
+          - name: DB_PORT
+            value: '3306'
+          - name: DB_HOST
+            value: bot-db-mariadb.bots.svc.cluster.local
+          - name: DB_NAME
+            value: bot-db
+        resources:
+          limits:
+            memory: "100Mi"
+            cpu: "100m"

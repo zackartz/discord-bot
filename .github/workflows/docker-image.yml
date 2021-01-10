@@ -1,0 +1,52 @@
+on: [push]
+env:
+  NAMESPACE: bots
+  SHA: ${{ github.sha }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    
+    - name: short-sha
+      uses: benjlevesque/short-sha@v1.2
+      id: short-sha
+      with:
+        length: 7
+    - run: echo $SHA
+      env: 
+        SHA: ${{ steps.short-sha.outputs.sha }}
+    - run: echo $SHA
+      env: 
+        SHA: ${{ env.SHA }}
+
+    
+    - uses: Azure/docker-login@v1
+      with:
+        login-server: reg.zackmyers.io
+        username: ${{ secrets.DOCKER_REG_UNAME }}
+        password: ${{ secrets.DOCKER_REG_PASSWD }}
+    
+    - run: |
+        docker build . -t reg.zackmyers.io/zack/synergy:${{ env.SHA }} --label dockerfile-path=./Dockerfile
+        docker push reg.zackmyers.io/zack/synergy:${{ env.SHA }}
+      
+    - uses: azure/k8s-set-context@v1
+      with:
+        method: kubeconfig
+        kubeconfig: ${{ secrets.KUBECFG }}
+      id: setcontext
+
+    - uses: Azure/k8s-deploy@v1.2
+      with:
+        namespace: ${{ env.NAMESPACE }}
+        manifests: |
+          k8s/deploy.yaml
+          k8s/service.yaml
+        images: |
+          reg.zackmyers.io/zack/synergy:${{ env.SHA }}
+        args: |
+          --kubeconfig ${{ env.KUBECONFIG }}
+        imagepullsecrets: |
+          regcred
