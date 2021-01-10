@@ -43,7 +43,6 @@ jobs:
         namespace: ${{ env.NAMESPACE }}
         manifests: |
           k8s/deploy.yaml
-          k8s/service.yaml
         images: |
           reg.zackmyers.io/zack/synergy:${{ env.SHA }}
         args: |
