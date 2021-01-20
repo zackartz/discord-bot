@@ -20,7 +20,7 @@ spec:
           - name: DB_USER
             value: bot-admin
           - name: DB_PASS
-            value: xPkVCla0Dg
+            value: <DB_PASS>
           - name: DB_PORT
             value: '3306'
           - name: DB_HOST
