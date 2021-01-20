@@ -16,7 +16,7 @@ spec:
         image: reg.zackmyers.io/zack/synergy:v0.1.0
         env:
           - name: DISCORD_TOKEN
-            value: Nzk3NjYyMTUzOTk3MDI1MzAw.X_puxQ.KHUpJd9-yizSDM6yU60aQeyvvaI
+            value: <TOKEN>
           - name: DB_USER
             value: bot-admin
           - name: DB_PASS

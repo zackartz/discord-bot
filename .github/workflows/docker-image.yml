@@ -14,13 +14,11 @@ jobs:
       id: short-sha
       with:
         length: 7
-    - run: echo $SHA
-      env: 
-        SHA: ${{ steps.short-sha.outputs.sha }}
+
     - run: echo $SHA
       env: 
         SHA: ${{ env.SHA }}
-
+    - run: sed "s/<TOKEN>/${{ secrets.DISCORD_TOKEN }}" k8s/deploy.yaml
     
     - uses: Azure/docker-login@v1
       with:
