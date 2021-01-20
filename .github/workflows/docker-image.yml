@@ -18,7 +18,7 @@ jobs:
     - run: echo $SHA
       env: 
         SHA: ${{ env.SHA }}
-    - run: sed "s/<TOKEN>/${{ secrets.DISCORD_TOKEN }}" k8s/deploy.yaml
+    - run: sed "s/<TOKEN>/${{ secrets.DISCORD_TOKEN }}/" k8s/deploy.yaml
     
     - uses: Azure/docker-login@v1
       with:
