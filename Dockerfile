@@ -1,5 +1,5 @@
 FROM andersfylling/disgord:latest as builder
-MAINTAINER https://github.com/andersfylling
+MAINTAINER https://github.com/zackartz
 WORKDIR /build
 COPY . /build
 RUN go test ./...
