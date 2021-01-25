@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
-    
+
     - name: short-sha
       uses: benjlevesque/short-sha@v1.2
       id: short-sha
@@ -16,20 +16,20 @@ jobs:
         length: 7
 
     - run: echo $SHA
-      env: 
+      env:
         SHA: ${{ env.SHA }}
-    - run: sed -i "s/<TOKEN>/${{ secrets.DISCORD_TOKEN }}/;s/<DB_PASS>/${{ secrets.DB_PASS }}/" k8s/deploy.yaml
-    
+    - run: sed -i "s/<TOKEN>/${{ secrets.DISCORD_TOKEN }}/;s/<DB_PASS>/${{ secrets.DB_PASS }}/;s/<YT_KEY>/${{ secrets.YT_KEY }}/" k8s/deploy.yaml
+
     - uses: Azure/docker-login@v1
       with:
         login-server: reg.zackmyers.io
         username: ${{ secrets.DOCKER_REG_UNAME }}
         password: ${{ secrets.DOCKER_REG_PASSWD }}
-    
+
     - run: |
         docker build . -t reg.zackmyers.io/zack/synergy:${{ env.SHA }} --label dockerfile-path=./Dockerfile
         docker push reg.zackmyers.io/zack/synergy:${{ env.SHA }}
-      
+
     - uses: azure/k8s-set-context@v1
       with:
         method: kubeconfig

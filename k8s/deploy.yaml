@@ -23,6 +23,8 @@ spec:
             value: <DB_PASS>
           - name: DB_PORT
             value: '3306'
+          - name: YT_KEY
+            value: <YT_KEY>
           - name: DB_HOST
             value: bot-db-mariadb.bots.svc.cluster.local
           - name: DB_NAME
@@ -30,4 +32,4 @@ spec:
         resources:
           limits:
             memory: "100Mi"
-            cpu: "100m"
+            cpu: "400m"
