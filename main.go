@@ -8,13 +8,14 @@ import (
 	"synergy/cmds"
 	"synergy/db"
 	"synergy/events"
+	"synergy/music"
 )
 
 var log = &logrus.Logger{
 	Out:       os.Stderr,
 	Formatter: new(logrus.TextFormatter),
 	Hooks:     make(logrus.LevelHooks),
-	Level:     logrus.DebugLevel,
+	Level:     logrus.ErrorLevel,
 }
 
 func main() {
@@ -25,6 +26,8 @@ func main() {
 		BotToken: os.Getenv("DISCORD_TOKEN"),
 		Logger:   log,
 	})
+
+	go music.QueueWay()
 
 	router := cmdlr2.Create(&cmdlr2.Router{
 		Prefixes:         []string{"$"},
