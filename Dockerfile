@@ -1,11 +1,21 @@
-FROM andersfylling/disgord:latest as builder
-MAINTAINER https://github.com/zackartz
-WORKDIR /build
-COPY . /build
-RUN go test ./...
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags '-extldflags \"-static\"' -o discordbot .
+FROM golang:1.15 AS build
 
-FROM gcr.io/distroless/base
-WORKDIR /bot
-COPY --from=builder /build/discordbot .
-CMD ["/bot/discordbot"]
+WORKDIR /go/src/db
+
+COPY . .
+
+RUN go mod download
+
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o app .
+
+FROM alpine:latest
+
+WORKDIR /app
+
+RUN apk add --update ffmpeg
+
+COPY --from=build /go/src/db/app .
+
+EXPOSE 1337
+
+CMD ["./app", "-prod"]
